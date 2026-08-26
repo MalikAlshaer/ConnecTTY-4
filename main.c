@@ -15,7 +15,7 @@ char *fg_cyan =     "\x1B[0;36m";
 char *fg_white =    "\x1B[0;37m";
 char *reset =       "\x1B[0m";
 
-char *bold =    "\x1B[1m";
+char *bold =        "\x1B[1m";
 
 #define blank_icon '.'
 char player_0_icon = 'x';
@@ -29,16 +29,14 @@ void out_board() {
     printf("%sPLAYER %d TURN%s\n", bold, player_turn % 2 + 1, reset); // print PLAYER N TURN
 
     for (int y = 0; y < GRID_HEIGHT; y++) {
-        printf("%d ", GRID_HEIGHT - y);
         for (int x = 0; x < GRID_WIDTH; x++) {
-            if      (board[y][x] == blank_icon) printf("%s%c%s ", fg_white, board[y][x], reset);
-            else if (board[y][x] == player_0_icon) printf("%s%c%s ", fg_red, board[y][x], reset);
-            else if (board[y][x] == player_1_icon) printf("%s%c%s ", fg_blue, board[y][x], reset);
+            if      (board[y][x] == blank_icon)     printf("%s%c%s ", fg_white, board[y][x], reset);
+            else if (board[y][x] == player_0_icon)  printf("%s%c%s ", fg_red,   board[y][x], reset);
+            else if (board[y][x] == player_1_icon)  printf("%s%c%s ", fg_blue,  board[y][x], reset);
         }
         printf("\n");
     }
 
-    printf("  ");
     for (int x = 1; x < GRID_WIDTH + 1; x++)
         printf("%d ", x);
     printf("\n");
@@ -52,18 +50,26 @@ void user_input() {
             out_board();
             printf("Enter valid coordinates\n");
         }
+
         printf("Enter x coordinate: ");
         scanf("%d", &x);
-        printf("Enter y coordinate: ");
-        scanf("%d", &y);
-        repeat = 1;
-    } while (x < 1 || x > GRID_WIDTH ||
-            y < 1 || y > GRID_HEIGHT ||
-            board[GRID_HEIGHT - y][x - 1] != blank_icon);
 
-    // Set grid to start from bottom left at 1, 1
-    y = GRID_HEIGHT - y;
-    x -= 1;
+        x -= 1; // convert to (1 .. GRID_WIDTH)
+
+        for (int i = GRID_HEIGHT - 1; i >=  0; i--) {
+            if (board[i][x] == blank_icon) {
+                y = i;
+                break;
+            }
+        }
+
+        if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) {
+            y = -1;
+        }
+
+        repeat = 1;
+    } while (y == -1);
+
 
     if (player_turn % 2 == 0) {
         board[y][x] = player_0_icon;
@@ -75,6 +81,7 @@ void user_input() {
 
 int main() {
     memset(board, blank_icon, sizeof(board)); // clear board
+
     while (game_run) {
         out_board();
         user_input();
