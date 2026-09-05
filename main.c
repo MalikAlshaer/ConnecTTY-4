@@ -132,10 +132,11 @@ int main() {
 
     memset(game.board, blank_icon, sizeof(game.board)); // clear board
 
+    print_board(&game);
     while (game.running) {
-        print_board(&game);
         user_input(&game);
         check_win(&game);
+        print_board(&game);
     }
 
     // cleanup
